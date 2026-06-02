@@ -1,0 +1,61 @@
+:root {
+  --bg-primary: #1a1f2e;
+  --bg-secondary: #242938;
+  --bg-card: #1e2332;
+  --accent: #f97316;
+  --accent-hover: #ea6a0a;
+  --text-primary: #e8eaf6;
+  --text-muted: #8892b0;
+  --border: #2d3450;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warning: #facc15;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: "Poppins", sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-primary;
+}
+
+.input {
+  @apply w-full rounded-md border border-borderColor bg-secondary px-3 py-2 text-sm text-textPrimary placeholder:text-textMuted focus-ring;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition focus-ring disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+.btn-primary {
+  @apply btn bg-accent text-white hover:bg-accentHover;
+}
+
+.btn-muted {
+  @apply btn border border-borderColor bg-secondary text-textPrimary hover:border-accent;
+}
+
+.card {
+  @apply rounded-lg border border-borderColor bg-card;
+}

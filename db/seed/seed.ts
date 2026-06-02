@@ -1,0 +1,27 @@
+export const demoCustomer = {
+  id: "demo-customer-1",
+  name: "Ali Khan",
+  phone: "+923001234567",
+  address: "Main Bazaar",
+  openingBalance: 2500,
+};
+
+export const demoUsers = [
+  { userId: "admin", name: "Admin User", password: "Admin@123", role: "ADMIN", customerId: null },
+  { userId: "manager", name: "Store Manager", password: "Manager@123", role: "MANAGER", customerId: null },
+  { userId: "salesman", name: "Sales Executive", password: "Salesman@123", role: "SALESMAN", customerId: null },
+  { userId: "accountant", name: "Accountant", password: "Accountant@123", role: "ACCOUNTANT", customerId: null },
+  { userId: "AdurRahman", name: "Adur Rahman", password: "AdurRahman", role: "ADMIN", customerId: null },
+  { userId: "customer1", name: "Ali Khan", password: "Customer@123", role: "CUSTOMER", customerId: demoCustomer.id },
+] as const;
+
+export const demoProducts = [
+  { name: "Rice 25kg", category: "Grocery", purchasePrice: 5200, salePrice: 5750, quantity: 18, lowStockLimit: 6 },
+  { name: "Cooking Oil 5L", category: "Grocery", purchasePrice: 2300, salePrice: 2550, quantity: 4, lowStockLimit: 8 },
+  { name: "LED Bulb 12W", category: "Electronics", purchasePrice: 320, salePrice: 450, quantity: 36, lowStockLimit: 10 },
+] as const;
+
+export const demoSuppliers = [
+  { name: "Metro Traders", phone: "+923111111111", address: "Wholesale Market" },
+  { name: "City Supplies", phone: "+923222222222", address: "Industrial Area" },
+] as const;
