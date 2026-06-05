@@ -19,7 +19,29 @@ import { errorHandler } from "./utils/errors.js";
 export const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: env.frontendUrl, credentials: true }));
+const allowedCorsOrigins = [
+  env.frontendUrl,
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://localhost:5000",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5000",
+  "http://10.0.2.2:5000",
+];
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedCorsOrigins.includes(origin) || /^http:\/\/192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(morgan("dev"));
 app.use(rateLimit({ windowMs: 60_000, limit: 180 }));
