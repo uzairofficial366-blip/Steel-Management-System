@@ -26,6 +26,7 @@ const rateLimit = (
   rateLimitModule
 ) as (options: { windowMs: number; limit: number }) => RequestHandler;
 
+app.set("trust proxy", 1);
 app.use(helmet());
 const allowedCorsOrigins = [
   env.frontendUrl,
@@ -75,3 +76,5 @@ app.use("/api/reports", reportsRouter);
 app.use("/api/suppliers", suppliersRouter);
 
 app.use(errorHandler);
+
+export default app;
