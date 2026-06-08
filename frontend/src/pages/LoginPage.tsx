@@ -18,16 +18,26 @@ export default function LoginPage() {
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
+    const trimmedUserId = userId.trim();
+    const trimmedPassword = password.trim();
     setError("");
+
+    if (!trimmedUserId || !trimmedPassword) {
+      setError("Enter your User ID and password");
+      return;
+    }
+
     setLoading(true);
     try {
-      const path = await login(userId, password);
+      const path = await login(trimmedUserId, trimmedPassword);
       navigate(path, { replace: true });
     } catch (err) {
       if (axios.isAxiosError(err) && !err.response) {
         setError("Backend is not reachable. Start the API server and try again.");
       } else if (axios.isAxiosError(err) && err.response?.status && err.response.status >= 500) {
         setError(err.response.data?.message || "Server setup error. Check backend database and API logs.");
+      } else if (axios.isAxiosError(err) && err.response?.status === 400) {
+        setError(err.response.data?.message || "Enter your User ID and password");
       } else {
         setError("Wrong User ID or password");
       }
@@ -50,7 +60,13 @@ export default function LoginPage() {
             User ID
             <div className="relative mt-2">
               <User className="pointer-events-none absolute left-3 top-2.5 h-5 w-5 text-textMuted" />
-              <input className="input pl-10" value={userId} onChange={(event) => setUserId(event.target.value)} />
+              <input
+                className="input pl-10"
+                value={userId}
+                onChange={(event) => setUserId(event.target.value)}
+                autoComplete="username"
+                required
+              />
             </div>
           </label>
           <label className="mt-4 block text-sm font-medium">
@@ -62,6 +78,8 @@ export default function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
+                autoComplete="current-password"
+                required
               />
               <button
                 type="button"

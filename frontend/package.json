@@ -8,6 +8,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/core": "^8.4.0",
     "@vitejs/plugin-react": "^4.3.4",
     "axios": "^1.7.9",
     "lucide-react": "^0.468.0",
@@ -17,6 +19,7 @@
     "react-router-dom": "^7.0.2"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.4.0",
     "@types/react": "^18.3.17",
     "@types/react-dom": "^18.3.5",
     "autoprefixer": "^10.4.20",
