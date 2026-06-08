@@ -1,7 +1,8 @@
 import cors from "cors";
 import express from "express";
-import rateLimit from "express-rate-limit";
-import helmet from "helmet";
+import type { RequestHandler } from "express";
+import * as rateLimitModule from "express-rate-limit";
+import * as helmetModule from "helmet";
 import morgan from "morgan";
 import { env } from "./config/env.js";
 import { authRouter } from "./routes/auth.js";
@@ -17,6 +18,13 @@ import { usersRouter } from "./routes/users.js";
 import { errorHandler } from "./utils/errors.js";
 
 export const app = express();
+
+const helmet = ((helmetModule as unknown as { default?: unknown }).default ?? helmetModule) as () => RequestHandler;
+const rateLimit = (
+  (rateLimitModule as unknown as { rateLimit?: unknown; default?: unknown }).rateLimit ??
+  (rateLimitModule as unknown as { default?: unknown }).default ??
+  rateLimitModule
+) as (options: { windowMs: number; limit: number }) => RequestHandler;
 
 app.use(helmet());
 const allowedCorsOrigins = [
