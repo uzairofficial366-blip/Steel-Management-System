@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { api, money } from "../../lib/api";
 import { PageHeader } from "../../components/DashboardLayout";
 import { useAuth } from "../../context/AuthContext";
-import type { Customer } from "../../lib/types";
+import type { Customer, Supplier } from "../../lib/types";
 
 export function KhataPage() {
   const { user } = useAuth();
@@ -94,7 +94,8 @@ export function PaymentsPage({ expenseOnly = false }: { expenseOnly?: boolean })
   const { user } = useAuth();
   const [payments, setPayments] = useState<any[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [form, setForm] = useState({ customerId: "", amount: 0, type: expenseOnly ? "EXPENSE" : "CUSTOMER_PAYMENT", note: "" });
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [form, setForm] = useState({ customerId: "", supplierId: "", amount: 0, type: expenseOnly ? "EXPENSE" : "CUSTOMER_PAYMENT", note: "" });
 
   function load() {
     api.get("/payments").then((response) => setPayments(response.data.payments || []));
@@ -104,14 +105,17 @@ export function PaymentsPage({ expenseOnly = false }: { expenseOnly?: boolean })
     load();
     if (user?.role !== "CUSTOMER") {
       api.get("/customers").then((response) => setCustomers(response.data.customers || [])).catch(() => null);
+      api.get("/suppliers").then((response) => setSuppliers(response.data.suppliers || [])).catch(() => null);
     }
   }, [user]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (form.type === "CUSTOMER_PAYMENT" && !form.customerId) return toast.error("Choose a customer");
+    if (form.type === "SUPPLIER_PAYMENT" && !form.supplierId) return toast.error("Choose a supplier");
     await api.post("/payments", form);
     toast.success(expenseOnly ? "Expense saved" : "Payment saved");
-    setForm({ customerId: "", amount: 0, type: expenseOnly ? "EXPENSE" : "CUSTOMER_PAYMENT", note: "" });
+    setForm({ customerId: "", supplierId: "", amount: 0, type: expenseOnly ? "EXPENSE" : "CUSTOMER_PAYMENT", note: "" });
     load();
   }
 
@@ -121,16 +125,29 @@ export function PaymentsPage({ expenseOnly = false }: { expenseOnly?: boolean })
       <div className="grid gap-6 xl:grid-cols-[360px_1fr]">
         {user?.role !== "CUSTOMER" && (
         <form onSubmit={submit} className="card h-fit space-y-4 p-5">
-          {!expenseOnly && (
+          {!expenseOnly && form.type === "CUSTOMER_PAYMENT" && (
             <label className="block text-sm">Customer
               <select className="input mt-2" value={form.customerId} onChange={(event) => setForm({ ...form, customerId: event.target.value })}>
-                <option value="">No customer</option>
+                <option value="">Select customer</option>
                 {customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.name}</option>)}
               </select>
             </label>
           )}
+          {!expenseOnly && form.type === "SUPPLIER_PAYMENT" && (
+            <label className="block text-sm">Supplier
+              <select className="input mt-2" value={form.supplierId} onChange={(event) => setForm({ ...form, supplierId: event.target.value })}>
+                <option value="">Select supplier</option>
+                {suppliers.map((supplier) => <option key={supplier.id} value={supplier.id}>{supplier.name}</option>)}
+              </select>
+            </label>
+          )}
           <label className="block text-sm">Type
-            <select className="input mt-2" value={form.type} onChange={(event) => setForm({ ...form, type: event.target.value })}>
+            <select
+              className="input mt-2"
+              value={form.type}
+              onChange={(event) => setForm({ ...form, type: event.target.value, customerId: "", supplierId: "" })}
+              disabled={expenseOnly}
+            >
               <option value="CUSTOMER_PAYMENT">CUSTOMER_PAYMENT</option>
               <option value="SUPPLIER_PAYMENT">SUPPLIER_PAYMENT</option>
               <option value="EXPENSE">EXPENSE</option>
@@ -148,8 +165,8 @@ export function PaymentsPage({ expenseOnly = false }: { expenseOnly?: boolean })
         )}
         <div className={`card overflow-x-auto ${user?.role === "CUSTOMER" ? "xl:col-span-2" : ""}`}>
           <table className="w-full min-w-[680px] text-left text-sm">
-            <thead className="bg-secondary text-textMuted"><tr><th className="px-4 py-3">Type</th><th className="px-4 py-3">Amount</th><th className="px-4 py-3">Customer</th><th className="px-4 py-3">Note</th><th className="px-4 py-3">Date</th></tr></thead>
-            <tbody>{payments.filter((p) => !expenseOnly || p.type === "EXPENSE").map((p) => <tr key={p.id} className="border-t border-borderColor"><td className="px-4 py-3">{p.type}</td><td className="px-4 py-3">PKR {money(p.amount)}</td><td className="px-4 py-3">{p.customer?.name || "-"}</td><td className="px-4 py-3">{p.note}</td><td className="px-4 py-3">{new Date(p.createdAt).toLocaleDateString()}</td></tr>)}</tbody>
+            <thead className="bg-secondary text-textMuted"><tr><th className="px-4 py-3">Type</th><th className="px-4 py-3">Amount</th><th className="px-4 py-3">Customer</th><th className="px-4 py-3">Supplier</th><th className="px-4 py-3">Note</th><th className="px-4 py-3">Date</th></tr></thead>
+            <tbody>{payments.filter((p) => !expenseOnly || p.type === "EXPENSE").map((p) => <tr key={p.id} className="border-t border-borderColor"><td className="px-4 py-3">{p.type}</td><td className="px-4 py-3">PKR {money(p.amount)}</td><td className="px-4 py-3">{p.customer?.name || "-"}</td><td className="px-4 py-3">{p.supplier?.name || "-"}</td><td className="px-4 py-3">{p.note}</td><td className="px-4 py-3">{new Date(p.createdAt).toLocaleDateString()}</td></tr>)}</tbody>
           </table>
         </div>
       </div>

@@ -28,6 +28,13 @@ export type Product = {
   lowStockLimit: number;
 };
 
+export type Supplier = {
+  id: string;
+  name: string;
+  phone: string;
+  address: string;
+};
+
 export type Sale = {
   id: string;
   invoiceNumber: string;
@@ -37,6 +44,18 @@ export type Sale = {
   paymentStatus: string;
   createdAt: string;
   customer?: Customer;
+  items?: Array<{ id: string; quantity: number; price: string | number; subtotal: string | number; product?: Product }>;
+};
+
+export type Purchase = {
+  id: string;
+  invoiceNumber: string;
+  totalAmount: string | number;
+  paidAmount: string | number;
+  remainingAmount: string | number;
+  paymentStatus: string;
+  createdAt: string;
+  supplier?: Supplier;
   items?: Array<{ id: string; quantity: number; price: string | number; subtotal: string | number; product?: Product }>;
 };
 

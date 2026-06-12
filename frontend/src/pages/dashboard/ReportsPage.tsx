@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { BarChart3, CreditCard, TrendingUp, WalletCards } from "lucide-react";
 import { api, money } from "../../lib/api";
 import { PageHeader, StatCard } from "../../components/DashboardLayout";
@@ -44,19 +45,43 @@ export function ReportsPage() {
 }
 
 export function SettingsPage() {
+  const [settings, setSettings] = useState({
+    shopName: "Smart Shop",
+    invoicePrefix: "INV",
+    currency: "PKR",
+    lowStockNotification: "Enabled",
+  });
+
+  useEffect(() => {
+    api.get("/settings").then((response) => setSettings(response.data.settings || settings)).catch(() => null);
+  }, []);
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    const response = await api.put("/settings", settings);
+    setSettings(response.data.settings);
+    toast.success("Settings saved");
+  }
+
   return (
     <div>
       <PageHeader title="Settings" subtitle="System settings are restricted to admin users." />
-      <div className="card p-6">
+      <form onSubmit={submit} className="card p-6">
         <h3 className="text-lg font-bold">Shop configuration</h3>
         <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <label className="block text-sm">Shop name<input className="input mt-2" defaultValue="Smart Shop" /></label>
-          <label className="block text-sm">Invoice prefix<input className="input mt-2" defaultValue="INV" /></label>
-          <label className="block text-sm">Currency<input className="input mt-2" defaultValue="PKR" /></label>
-          <label className="block text-sm">Low stock notification<input className="input mt-2" defaultValue="Enabled" /></label>
+          <label className="block text-sm">Shop name<input className="input mt-2" value={settings.shopName} onChange={(event) => setSettings({ ...settings, shopName: event.target.value })} /></label>
+          <label className="block text-sm">Invoice prefix<input className="input mt-2" value={settings.invoicePrefix} onChange={(event) => setSettings({ ...settings, invoicePrefix: event.target.value })} /></label>
+          <label className="block text-sm">Currency<input className="input mt-2" value={settings.currency} onChange={(event) => setSettings({ ...settings, currency: event.target.value })} /></label>
+          <label className="block text-sm">
+            Low stock notification
+            <select className="input mt-2" value={settings.lowStockNotification} onChange={(event) => setSettings({ ...settings, lowStockNotification: event.target.value })}>
+              <option value="Enabled">Enabled</option>
+              <option value="Disabled">Disabled</option>
+            </select>
+          </label>
         </div>
-        <button className="btn-primary mt-5" type="button">Save settings</button>
-      </div>
+        <button className="btn-primary mt-5">Save settings</button>
+      </form>
     </div>
   );
 }

@@ -53,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
           keyboardType: TextInputType.url,
           decoration: const InputDecoration(
             labelText: 'API URL',
-            hintText: 'http://192.168.18.54:5000/api',
+            hintText: 'http://192.168.18.42:5000/api',
           ),
         ),
         actions: [

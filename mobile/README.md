@@ -35,13 +35,13 @@ For a real Android phone on the same Wi-Fi, replace `YOUR_COMPUTER_IP` with your
 
 ```powershell
 ipconfig
-flutter run --dart-define=API_BASE_URL=http://192.168.1.105:5000/api
+flutter run --dart-define=API_BASE_URL=http://192.168.18.42:5000/api
 ```
 
 If the APK is already installed and login says it cannot connect, tap **Server** on the login screen and set:
 
 ```text
-http://192.168.18.54:5000/api
+http://192.168.18.42:5000/api
 ```
 
 Then try login again.

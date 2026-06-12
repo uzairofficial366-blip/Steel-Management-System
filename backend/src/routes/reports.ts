@@ -5,7 +5,7 @@ import { authenticate, authorize } from "../middleware/auth.js";
 import { asyncHandler } from "../utils/errors.js";
 
 export const reportsRouter = Router();
-reportsRouter.use(authenticate, authorize(Role.ADMIN, Role.MANAGER, Role.ACCOUNTANT));
+reportsRouter.use(authenticate);
 
 function startOfToday() {
   const date = new Date();
@@ -22,21 +22,40 @@ function startOfMonth() {
 
 reportsRouter.get(
   "/dashboard",
+  authorize(Role.ADMIN, Role.MANAGER, Role.ACCOUNTANT, Role.SALESMAN),
   asyncHandler(async (_req, res) => {
-    const [products, todaySalesAgg, monthlySalesAgg, totalCustomers, customerDuesAgg, supplierDuesAgg, recentInvoices] =
+    const [products, todaySalesAgg, monthlySalesAgg, totalCustomers, customerRows, supplierRows, recentInvoices] =
       await Promise.all([
         prisma.product.findMany(),
         prisma.sale.aggregate({ where: { createdAt: { gte: startOfToday() } }, _sum: { totalAmount: true } }),
         prisma.sale.aggregate({ where: { createdAt: { gte: startOfMonth() } }, _sum: { totalAmount: true } }),
         prisma.customer.count(),
-        prisma.sale.aggregate({ _sum: { remainingAmount: true } }),
-        prisma.purchase.aggregate({ _sum: { remainingAmount: true } }),
+        prisma.customer.findMany({ select: { openingBalance: true, khataEntries: true } }),
+        prisma.supplier.findMany({ select: { supplierKhataEntries: true } }),
         prisma.sale.findMany({
           include: { customer: true },
           orderBy: { createdAt: "desc" },
           take: 8,
         }),
       ]);
+    const customerDues = customerRows.reduce(
+      (total, customer) =>
+        total +
+        customer.khataEntries.reduce(
+          (sum, entry) => sum + (entry.type === "DEBIT" ? Number(entry.amount) : -Number(entry.amount)),
+          Number(customer.openingBalance),
+        ),
+      0,
+    );
+    const supplierDues = supplierRows.reduce(
+      (total, supplier) =>
+        total +
+        supplier.supplierKhataEntries.reduce(
+          (sum, entry) => sum + (entry.type === "DEBIT" ? Number(entry.amount) : -Number(entry.amount)),
+          0,
+        ),
+      0,
+    );
     const lowStock = products
       .filter((product) => product.quantity <= product.lowStockLimit)
       .sort((a, b) => b.lowStockLimit - b.quantity - (a.lowStockLimit - a.quantity))
@@ -47,8 +66,8 @@ reportsRouter.get(
       todaySales: Number(todaySalesAgg._sum.totalAmount || 0),
       monthlySales: Number(monthlySalesAgg._sum.totalAmount || 0),
       totalCustomers,
-      customerDues: Number(customerDuesAgg._sum.remainingAmount || 0),
-      supplierDues: Number(supplierDuesAgg._sum.remainingAmount || 0),
+      customerDues,
+      supplierDues,
       lowStock,
       recentInvoices,
     });
@@ -57,6 +76,7 @@ reportsRouter.get(
 
 reportsRouter.get(
   "/sales",
+  authorize(Role.ADMIN, Role.MANAGER, Role.ACCOUNTANT),
   asyncHandler(async (_req, res) => {
     const sales = await prisma.sale.findMany({
       include: { customer: true, user: true, items: { include: { product: true } } },
@@ -68,6 +88,7 @@ reportsRouter.get(
 
 reportsRouter.get(
   "/profit-loss",
+  authorize(Role.ADMIN, Role.MANAGER, Role.ACCOUNTANT),
   asyncHandler(async (_req, res) => {
     const saleItems = await prisma.saleItem.findMany({ include: { product: true } });
     const revenue = saleItems.reduce((sum, item) => sum + Number(item.subtotal), 0);
@@ -80,11 +101,15 @@ reportsRouter.get(
 
 reportsRouter.get(
   "/customer-dues",
+  authorize(Role.ADMIN, Role.MANAGER, Role.ACCOUNTANT),
   asyncHandler(async (_req, res) => {
-    const customers = await prisma.customer.findMany({ include: { sales: true, khataEntries: true } });
+    const customers = await prisma.customer.findMany({ include: { khataEntries: true } });
     const dues = customers.map((customer) => ({
       customer,
-      due: customer.sales.reduce((sum, sale) => sum + Number(sale.remainingAmount), Number(customer.openingBalance)),
+      due: customer.khataEntries.reduce(
+        (sum, entry) => sum + (entry.type === "DEBIT" ? Number(entry.amount) : -Number(entry.amount)),
+        Number(customer.openingBalance),
+      ),
     }));
     res.json({ dues });
   }),
@@ -92,11 +117,15 @@ reportsRouter.get(
 
 reportsRouter.get(
   "/supplier-dues",
+  authorize(Role.ADMIN, Role.MANAGER, Role.ACCOUNTANT),
   asyncHandler(async (_req, res) => {
-    const suppliers = await prisma.supplier.findMany({ include: { purchases: true } });
+    const suppliers = await prisma.supplier.findMany({ include: { supplierKhataEntries: true } });
     const dues = suppliers.map((supplier) => ({
       supplier,
-      due: supplier.purchases.reduce((sum, purchase) => sum + Number(purchase.remainingAmount), 0),
+      due: supplier.supplierKhataEntries.reduce(
+        (sum, entry) => sum + (entry.type === "DEBIT" ? Number(entry.amount) : -Number(entry.amount)),
+        0,
+      ),
     }));
     res.json({ dues });
   }),

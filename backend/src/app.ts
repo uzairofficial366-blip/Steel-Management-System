@@ -13,6 +13,7 @@ import { productsRouter } from "./routes/products.js";
 import { purchasesRouter } from "./routes/purchases.js";
 import { reportsRouter } from "./routes/reports.js";
 import { salesRouter } from "./routes/sales.js";
+import { settingsRouter } from "./routes/settings.js";
 import { suppliersRouter } from "./routes/suppliers.js";
 import { usersRouter } from "./routes/users.js";
 import { errorHandler } from "./utils/errors.js";
@@ -73,6 +74,7 @@ app.use("/api/khata", khataRouter);
 app.use("/api/payments", paymentsRouter);
 app.use("/api/purchases", purchasesRouter);
 app.use("/api/reports", reportsRouter);
+app.use("/api/settings", settingsRouter);
 app.use("/api/suppliers", suppliersRouter);
 
 app.use(errorHandler);

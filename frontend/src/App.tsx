@@ -8,6 +8,7 @@ import { CustomersPage, ProductsPage, SuppliersPage, UsersPage } from "./pages/d
 import { SalesPage } from "./pages/dashboard/SalesPage";
 import { KhataPage, PaymentsPage } from "./pages/dashboard/FinancePages";
 import { ReportsPage, SettingsPage } from "./pages/dashboard/ReportsPage";
+import { PurchasesPage } from "./pages/dashboard/PurchasesPage";
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="products" element={<ProductsPage />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="sales" element={<SalesPage createMode />} />
+          <Route path="purchases" element={<PurchasesPage />} />
           <Route path="khata" element={<KhataPage />} />
           <Route path="suppliers" element={<SuppliersPage />} />
           <Route path="reports" element={<ReportsPage />} />
@@ -36,6 +38,7 @@ export default function App() {
           <Route path="dashboard" element={<DashboardHome />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="sales" element={<SalesPage createMode />} />
+          <Route path="purchases" element={<PurchasesPage />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="reports" element={<ReportsPage />} />
         </Route>

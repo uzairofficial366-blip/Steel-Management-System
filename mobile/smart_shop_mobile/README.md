@@ -50,7 +50,7 @@ ipconfig
 Then run with your computer IP:
 
 ```powershell
-flutter run --dart-define=API_BASE_URL=http://192.168.1.105:5000/api
+flutter run --dart-define=API_BASE_URL=http://192.168.18.42:5000/api
 ```
 
 Do not use `localhost` on a real phone. On a phone, `localhost` means the phone itself, not your computer.

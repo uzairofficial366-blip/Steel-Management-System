@@ -5,7 +5,7 @@ import { authenticate, authorize } from "../middleware/auth.js";
 import { AppError, asyncHandler } from "../utils/errors.js";
 
 export const suppliersRouter = Router();
-suppliersRouter.use(authenticate, authorize(Role.ADMIN, Role.ACCOUNTANT));
+suppliersRouter.use(authenticate, authorize(Role.ADMIN, Role.MANAGER, Role.ACCOUNTANT));
 
 suppliersRouter.get(
   "/",

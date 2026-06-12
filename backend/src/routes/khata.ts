@@ -18,9 +18,10 @@ khataRouter.get(
       where: { customerId: req.params.customerId },
       orderBy: { createdAt: "desc" },
     });
+    const customer = await prisma.customer.findUnique({ where: { id: req.params.customerId } });
     const balance = entries.reduce(
       (sum, entry) => sum + (entry.type === "DEBIT" ? Number(entry.amount) : -Number(entry.amount)),
-      0,
+      Number(customer?.openingBalance || 0),
     );
     res.json({ entries, balance });
   }),
