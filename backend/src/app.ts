@@ -29,25 +29,88 @@ const rateLimit = (
 
 app.set("trust proxy", 1);
 app.use(helmet());
-const allowedCorsOrigins = [
-  env.frontendUrl,
-  "http://localhost:3000",
-  "http://localhost:5173",
-  "http://localhost:5000",
-  "http://127.0.0.1:3000",
-  "http://127.0.0.1:5173",
-  "http://127.0.0.1:5000",
-  "http://10.0.2.2:5000",
-];
+
+const configuredFrontendOrigins = env.frontendUrl
+  ? env.frontendUrl.split(",").map((origin) => origin.trim())
+  : [];
+
+const allowedCorsOrigins = new Set(
+  [
+    ...configuredFrontendOrigins,
+
+    // Local web
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+
+    // Android emulator / local
+    "http://10.0.2.2:5000",
+
+    // Capacitor APK origins
+    "capacitor://localhost",
+    "http://localhost",
+    "https://localhost",
+  ].filter(Boolean),
+);
+
+// const allowedCorsOrigins = [
+//   env.frontendUrl,
+//   "http://localhost:3000",
+//   "http://localhost:5173",
+//   "http://localhost:5000",
+//   "http://127.0.0.1:3000",
+//   "http://127.0.0.1:5173",
+//   "http://127.0.0.1:5000",
+//   "http://10.0.2.2:5000",
+
+// ];
+
+
+
+// app.use(
+//   cors({
+//     origin(origin, callback) {
+//       // Allow Postman, mobile apps, same-origin requests, and server-to-server requests
+//       if (!origin) {
+//         return callback(null, true);
+//       }
+
+//       // Allow exact frontend/app origins
+//       if (allowedCorsOrigins.has(origin)) {
+//         return callback(null, true);
+//       }
+
+//       // Allow local network IPs for phone testing with laptop backend
+//       const isLocalNetwork =
+//         /^http:\/\/192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(origin) ||
+//         /^http:\/\/10\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(origin) ||
+//         /^http:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(origin);
+
+//       if (isLocalNetwork) {
+//         return callback(null, true);
+//       }
+
+//       return callback(new Error(`CORS blocked by policy: ${origin}`));
+//     },
+//     credentials: true,
+//   }),
+// );
+
+
 
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedCorsOrigins.includes(origin) || /^http:\/\/192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(origin)) {
+      if (!origin) {
         return callback(null, true);
       }
-      return callback(null, false);
+
+      if (allowedCorsOrigins.has(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked by policy: ${origin}`));
     },
     credentials: true,
   }),
